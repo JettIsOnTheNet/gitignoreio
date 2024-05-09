@@ -36,6 +36,7 @@ gitignore.io help:
   update - update the database of project types
   list - lists project types
   search :string: - fuzzy find
+  base - create a .gitignore with only the values from EXTRA_LINES
   :type: - creates .gitignore file for a project
 ```
 
