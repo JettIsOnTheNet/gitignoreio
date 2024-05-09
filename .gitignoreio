@@ -22,7 +22,7 @@ function gi() {
     if [ -z "$1" ] || [ "$1" == "help" ]; then
         echo "gitignore.io help:"
         echo "  help - shows this help"
-        echo "  update - update the database of project types"
+        echo "  update - force an update of the project types database"
         echo "  list - lists project types"
         echo "  search :string: - fuzzy find"
         echo "  base - create a .gitignore with only the values from EXTRA_LINES"

@@ -33,7 +33,7 @@ To display the help menu, type gi help or simply gi
 $ gi help
 gitignore.io help:
   help - shows this help
-  update - update the database of project types
+  update - force an update of the project types database
   list - lists project types
   search :string: - fuzzy find
   base - create a .gitignore with only the values from EXTRA_LINES
