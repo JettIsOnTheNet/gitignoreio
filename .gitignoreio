@@ -1,0 +1,132 @@
+function gi() {
+    local URL="https://www.toptal.com/developers/gitignore/api"
+    local EXTRA_LINES=("*.DS_Store" ".env")
+    local DB_FILE="$HOME/.config/gitignoreio/database"
+    local DAYS_BEFORE_AUTO_UPDATE=1
+
+    if [ ! -f "$DB_FILE" ]; then
+        mkdir -p "$(dirname "$DB_FILE")"
+        curl -sL $URL/list | tr ',' '\n' > "$DB_FILE"
+        echo "Local database created at $DB_FILE."
+    else
+        local LAST_MODIFIED=$(stat -f "%m" "$DB_FILE")
+        local CURRENT_TIME=$(date +%s)
+        local TIME_DIFF=$((CURRENT_TIME - LAST_MODIFIED))
+
+        if [ $TIME_DIFF -gt $((DAYS_BEFORE_AUTO_UPDATE * 24 * 60 * 60)) ]; then
+            curl -sL $URL/list | tr ',' '\n' > "$DB_FILE"
+            echo "Local database updated."
+        fi
+    fi
+
+    if [ -z "$1" ] || [ "$1" == "help" ]; then
+        echo "gitignore.io help:"
+        echo "  help - shows this help"
+        echo "  update - update the database of project types"
+        echo "  list - lists project types"
+        echo "  search :string: - fuzzy find"
+        echo "  :type: - creates .gitignore file for a project"
+        return
+    fi
+
+    if [ "$1" == "update" ]; then
+        curl -sL $URL/list > "$DB_FILE"
+        echo "Local database updated."
+        return
+    fi
+
+    if [ "$1" == "list" ]; then
+        IFS=',' read -ra LIST <<< "$(cat "$DB_FILE" | tr '\n' ',')"
+        for i in "${LIST[@]}"; do
+            echo "$i"
+        done
+        unset LIST
+    fi
+
+    if [ "$1" == "search" ] && [ -n "$2" ]; then
+        grep -iE "$2" "$DB_FILE"
+    fi
+
+    if [ "$1" != "list" ] && [ "$1" != "search" ]; then
+        response=$(grep -i "^$1$" "$DB_FILE")
+        if [ -z "$response" ]; then
+            echo "Error: Project type does not exist."
+            return
+        fi
+
+        if [ -f .gitignore ]; then
+            echo "HEY $(whoami)!, .gitignore exists already! (o)verwrite, (a)ppend, (q)uit?"
+            read -r action
+            case $action in
+                [oO]* )
+                    curl -sL "$URL/$response" > .gitignore
+                    for line in "${EXTRA_LINES[@]}"; do
+                        echo $line >> .gitignore
+                    done
+                    echo ".gitignore file created."
+                    ;;
+                [aA]* )
+                    curl -sL "$URL/$response" >> .gitignore
+                    for line in "${EXTRA_LINES[@]}"; do
+                        echo $line >> .gitignore
+                    done
+                    echo ".gitignore file created."
+                    ;;
+                [qQ]* )
+                    return
+                    ;;
+                * )
+                    echo "Invalid. Exit."
+                    return
+                    ;;
+            esac
+        else
+            curl -sL "$URL/$response" > .gitignore
+            for line in "${EXTRA_LINES[@]}"; do
+                echo $line >> .gitignore
+            done
+            echo ".gitignore file created."
+        fi
+    fi
+}
+
+
+# This wraps git command and adds .gitignore creation
+function git() {
+    case "$1" in
+        "init")
+            command git init
+            echo "Do you want to create a .gitignore file? (y/n)"
+            read -r answer
+            case "$answer" in
+                "y")
+                    echo "What kind of project are you creating? (Enter . to search for a project type)"
+                    while true; do
+                        read -r project_type
+                        case "$project_type" in
+                            ".")
+                                echo "Search term:"
+                                read -r search_term
+                                gi search $search_term
+                                echo "Project type:"
+                                ;;
+                            *)
+                                if gi $project_type; then
+                                    break
+                                else
+                                    echo "Invalid project type. Please enter a valid project type or . to search for a project type:"
+                                fi
+                                ;;
+                        esac
+                    done
+                    ;;
+                *)
+                    echo "Skipping .gitignore creation."
+                    ;;
+            esac
+            ;;
+        *)
+            command git "$@"
+            ;;
+    esac
+}
