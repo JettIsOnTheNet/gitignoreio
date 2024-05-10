@@ -31,7 +31,7 @@ function gi() {
     fi
 
     if [ "$1" == "update" ]; then
-        curl -sL $URL/list > "$DB_FILE"
+        curl -sL $URL/list | tr ',' '\n' > "$DB_FILE"
         echo "Local database updated."
         return
     fi
