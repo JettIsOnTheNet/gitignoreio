@@ -1,6 +1,7 @@
 function gi() {
     local URL="https://www.toptal.com/developers/gitignore/api"
     local EXTRA_LINES=("*.DS_Store" ".env")
+    local EXTRA_LINES_COMMENT="# User Config" 
     local DB_FILE="$HOME/.config/gitignoreio/database"
     local DAYS_BEFORE_AUTO_UPDATE=1
 
@@ -37,6 +38,7 @@ function gi() {
     fi
 
     if [ "$1" == "base" ]; then
+        echo $EXTRA_LINES_COMMENT >> .gitignore
         for line in "${EXTRA_LINES[@]}"; do
             echo $line >> .gitignore
         done
@@ -68,6 +70,7 @@ function gi() {
             case $action in
                 [oO]* )
                     curl -sL "$URL/$response" > .gitignore
+                    echo $EXTRA_LINES_COMMENT >> .gitignore
                     for line in "${EXTRA_LINES[@]}"; do
                         echo $line >> .gitignore
                     done
@@ -75,6 +78,7 @@ function gi() {
                     ;;
                 [aA]* ) 
                     curl -sL "$URL/$response" >> .gitignore
+                    echo $EXTRA_LINES_COMMENT >> .gitignore
                     for line in "${EXTRA_LINES[@]}"; do
                         echo $line >> .gitignore
                     done
@@ -90,6 +94,7 @@ function gi() {
             esac
         else
             curl -sL "$URL/$response" > .gitignore
+            echo $EXTRA_LINES_COMMENT >> .gitignore
             for line in "${EXTRA_LINES[@]}"; do
                 echo $line >> .gitignore
             done
