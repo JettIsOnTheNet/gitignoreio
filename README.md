@@ -46,7 +46,9 @@ On initial launch, it will create a text file in ~/.config/gitignoreio/database.
 
 This file stores all the currently available .gitignore templates. It is updated automatically if you call gi or git init and the database is older than 24h. You can adjust this inside the .gitignoreio file by changing the value DAYS_BEFORE_AUTO_UPDATE. 
 
-Other values you can adjust:
+## Config
+
+Other config values you can adjust:
 * URL Link to the API, or use your own. 
 * EXTRA_LINES Lines which will be added by default to every .gitignore
 * EXTRA_LINES_COMMENT The comment to denote the extra User Config lines
